@@ -1,0 +1,11 @@
+Elasticsearch - Aggregate by multiple fields
+
+{
+    "aggregations": {
+        "popular_categories": {
+            "terms": {
+                "script": "doc['category_id']" + ' | ' + doc['category_name']"
+            }
+        }
+    }
+}
