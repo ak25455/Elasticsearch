@@ -1,0 +1,10 @@
+# Install
+
+apt-get install python-pip
+pip install elasticsearch-curator
+
+
+curator show --show-indices
+curator close --older-than 30
+curator delete --older-than 60
+curator optimize --older-than 2 --max_num_segments 1
