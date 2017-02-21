@@ -1,0 +1,13 @@
+
+Cluster Health
+
+curl 'localhost:9200/_cat/health?v'
+
+List Nodes:
+
+curl 'localhost:9200/_cat/nodes?v'
+
+List Indices:
+
+curl 'localhost:9200/_cat/indices?v'
+

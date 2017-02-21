@@ -1,0 +1,23 @@
+Elasticsearch - Unassigned Shards
+
+Cluster Health:
+
+curl -XGET http://localhost:9200/_cluster/health?pretty
+
+
+Find Unassigned shards:
+curl -s localhost:9200/_cat/shards | grep UNASS
+
+Force assignment:
+
+
+curl -XPOST 'localhost:9200/_cluster/reroute' -d '{
+    "commands": [{
+        "allocate": {
+            "index": "my-index",
+            "shard": 4,
+            "node": "search03",
+            "allow_primary": 1
+        }
+    }]
+}'

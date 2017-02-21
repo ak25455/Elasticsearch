@@ -1,0 +1,45 @@
+input {
+
+ tcp {
+          type => "paloalto"
+          port => 5005
+          codec => "plain"
+      }
+}
+
+filter {
+######## PALOALTO LOGS ###################################################
+    if [type] == "paloalto" and [message] =~ /TRAFFIC/ {
+         csv {
+             columns => [ "Domain", "ReceiveTime", "Serial", "Type", "ThreatContent Type", "Config Version", "Generate Time", "SourceIP", "DestinationIP", "NAT Source IP", "NAT Destination IP", "Rule", "Source User","Destination User","Application","Virtual System","Source Zone","Destination Zone","Inbound Interface","Outbound Interface","Log Action","Time Logged","Session ID","Repeat Count","Source Port","Destination Port","NAT Source Port","NAT Destination Port","Flags","protocol","Action","Bytes","Bytes Sent","Bytes Received","Packets","Start Time","Elapsed Time (sec)","Category","Padding","seqno","actionflags","Source Country","Destination Country","cpadding","pkts_sent","pkts_received" ]
+             remove_field => [ "actionflags", "Config Version", "cpadding", "Domain", "Flags", "Elapsed Time (sec)","Generate Time", "Inbound Interface", "NAT Source IP", "NAT Destination IP","NAT Source Port","NAT Destination Port", "Padding", "seqno", "Serial", "Session ID", "Source Port", "Time Logged", "Virtual System" ]
+             add_tag => [ "PA-traffic"]
+        }
+
+        date {
+            match => [ "Start time", "YYYY/MM/dd HH:mm:ss" ]
+            add_tag => [ "PA-traffic-date"]
+        }
+    }
+    else if [type] == "paloalto" and [message] !~ /TRAFFIC/ {
+        csv {
+             columns => [ "Domain", "ReceiveTime", "Serial", "Type", "ThreatContent Type", "Config Version", "Generate Time", "SourceIP", "DestinationIP", "NAT Source IP", "NAT Destination IP", "Rule", "Source User","Destination User","Application","Virtual System","Source Zone","Destination Zone","Inbound Interface","Outbound Interface","Log Action","Time Logged","Session ID","Repeat Count","sport","dport","NAT Source Port","NAT Destination Port","Flags","protocol","Action", "URL","Threat/Content Name","Category","Severity","Direction","seqno","actionflags","Source Country","Destination Country","cpadding","contenttype" ]
+             remove_field => [ "actionflags", "Config Version", "cpadding", "Domain", "Flags", "Generate time", "Inbound Interface", "NAT Source IP", "NAT Destination IP","NAT Source Port","NAT Destination Port", "Padding", "seqno", "Serial", "Session ID", "Source Port", "Time Logged", "Virtual System", "content type" ]
+             add_tag => [ "PA-nontraffic" ]
+        }
+
+        date {
+            match => [ "Start time", "YYYY/MM/dd HH:mm:ss" ]
+        }
+   } 
+}
+ 
+output {
+#  stdout { codec => rubydebug   }
+
+#   elasticsearch { embedded => true }
+   elasticsearch { }
+
+}
+
+

@@ -1,0 +1,142 @@
+###################### Winlogbeat Configuration Example ##########################
+
+# This file is an example configuration file highlighting only the most common
+# options. The winlogbeat.full.yml file from the same directory contains all the
+# supported options with more comments. You can use it as a reference.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/winlogbeat/index.html
+
+#======================= Winlogbeat specific options ==========================
+
+# event_logs specifies a list of event logs to monitor as well as any
+# accompanying options. The YAML data type of event_logs is a list of
+# dictionaries.
+#
+# The supported keys are name (required), tags, fields, fields_under_root,
+# forwarded, ignore_older, level, event_id, provider, and include_xml. Please
+# visit the documentation for the complete details of each option.
+# https://go.es.io/WinlogbeatConfig
+winlogbeat.event_logs:
+  - name: Application
+    ignore_older: 72h
+  - name: Security
+    event_id: -5156, -4656, -5158, -4932, -4933, -4634, -4661, -4771
+  - name: System
+  - name: Symantec Endpoint Protection Client
+  - name: DNS Server
+
+#================================ General =====================================
+
+# The name of the shipper that publishes the network data. It can be used to group
+# all the transactions sent by a single shipper in the web interface.
+#name:
+
+# The tags of the shipper are included in their own field with each
+# transaction published.
+#tags: ["service-X", "web-tier"]
+tags: ["Corp", "Domain Controller"]
+# Optional fields that you can specify to add additional information to the
+# output.
+#fields:
+#  env: staging
+#================================ Processors ===================================
+
+# Processors are used to reduce the number of fields in the exported event or to
+# enhance the event with external metadata. This section defines a list of
+# processors that are applied one by one and the first one receives the initial
+# event:
+#
+#   event -> filter1 -> event1 -> filter2 ->event2 ...
+#
+# The supported processors are drop_fields, drop_event, include_fields, and
+# add_cloud_metadata.
+#
+# For example, you can use the following processors to keep the fields that
+# contain CPU load percentages, but remove the fields that contain CPU ticks
+# values:
+#
+#processors:
+#- include_fields:
+#    fields: ["cpu"]
+#- drop_fields:
+#    fields: ["cpu.user", "cpu.system"]
+#
+# The following example drops the events that have the HTTP response code 200:
+#
+processors:
+- drop_event:
+    when:
+         - equals:
+               event_data.LogonType: 3
+
+- drop_event:
+    when:
+        or:
+         - equals:
+               event_data.TargetUserName: svcSharePointApp
+         - equals:
+               event_data.TargetUserName: LogRhythm
+         - equals:
+               event_data.SubjectUserName: LogRhythm
+         - equals:
+               event_data.TargetUserName: ""
+         - equals:
+               event_data.TargetUserName: "ANONYMOUS LOGON"
+         - equals:
+               event_data.TargetUserName: simadmin
+
+processors:
+  - drop_fields:
+      fields: [activity_id, event_data.AccessList, event_data.AccessMask, event_data.AccessReason, event_data.AppCorrelationID, 
+
+event_data.AttributeSyntaxOID, event_data.DestinationDRA, event_data.EndUSN, event_data.HandleId, event_data.ImpersonationLevel, 
+
+event_data.LogonGuid,event_data.ObjectGUID,  event_data.OpCorrelationID, event_data.ServiceSid]
+#
+# The following example enriches each event with metadata from the cloud
+# provider about the host machine. It works on EC2, GCE, and DigitalOcean.
+#
+#processors:
+#- add_cloud_metadata:
+#
+
+#================================ Outputs =====================================
+
+# Configure what outputs to use when sending the data collected by the beat.
+# Multiple outputs may be used.
+
+#-------------------------- Elasticsearch output ------------------------------
+# output.elasticsearch:
+  # Array of hosts to connect to.
+ # hosts: ["localhost:9200"]
+
+  # Optional protocol and basic auth credentials.
+  #protocol: "https"
+  #username: "elastic"
+  #password: "changeme"
+
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  # The Logstash hosts
+  #hosts: ["localhost:5044"]
+ hosts: ["10.128.2.56:5044"]
+  # Optional SSL. By default is off.
+  # List of root certificates for HTTPS server verifications
+  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+
+  # Certificate for SSL client authentication
+  #ssl.certificate: "/etc/pki/client/cert.pem"
+
+  # Client Certificate Key
+  #ssl.key: "/etc/pki/client/cert.key"
+
+#================================ Logging =====================================
+
+# Sets log level. The default log level is info.
+# Available log levels are: critical, error, warning, info, debug
+logging.level: warning
+# At debug level, you can selectively enable logging only for some components.
+# To enable all selectors use ["*"]. Examples of other selectors are "beat",
+# "publish", "service".
+#logging.selectors: ["*"]

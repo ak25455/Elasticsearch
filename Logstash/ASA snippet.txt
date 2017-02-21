@@ -1,0 +1,18 @@
+{
+         "@source" => "syslog://10.x.x.x/",
+           "@type" => "syslog",
+           "@tags" => [
+        [0] "_grokparsefailure"
+    ],
+         "@fields" => {
+              "priority" => 13,
+              "severity" => 5,
+              "facility" => 1,
+        "facility_label" => "user-level",
+        "severity_label" => "Notice"
+    },
+      "@timestamp" => "2012-02-09T12:03:26.480000Z",
+    "@source_host" => "10.x.x.x",
+    "@source_path" => "/",
+        "@message" => "<166>Feb  9 13:03:21 10.y.y.y %ASA-6-305012: Teardown dynamic TCP translation from inside:xx.xx.xx.xx/3940 to Outside:xx.xx.xx.xx/16233 duration 0:00:30"
+}

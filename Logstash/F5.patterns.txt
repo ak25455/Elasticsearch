@@ -1,0 +1,29 @@
+# F5 Fields
+F5_VIRTSERVER (?:[\w.\-_]*:\s\d*)
+
+F5_NODE (?:[\w.-]+:*\d*)
+F5_METHOD (?:\b(GET|POST))
+F5_TIMESTAMP %{YEAR}/%{MONTHNUM}/%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})
+F5_POOL (?:[\/[\w\-.]+]*\s\d)
+F5_SSL_CIPHER (?:[\w\-.]+)
+F5_SSL_CERT (?:[[A-Z]+=[\w\s]+,*]+)
+
+# HTTPS Grok Pattern
+F5_HTTPS_LOG ^\|%{F5_VIRTSERVER:virt}\|%{IP:clientip}\|%{F5_METHOD:httpmethod}\|\"%{URIPATHPARAM:request}\"\|HTTP/%{NUMBER:httpversion}\|%{GREEDYDATA:useragent}\|%{QS:referrer}\|%{F5_TIMESTAMP:request_timestamp}\|%{NUMBER:request_length}\|%{NUMBER:request_elapsed_time}\|%{F5_NODE:node}\|%{NUMBER:response}\|%{F5_TIMESTAMP:response_timestamp}\|%{NUMBER:response_length}\|%{F5_POOL:pool}\|%{F5_SSL_CIPHER:ssl_cipher}\|%{F5_SSL_CIPHER:ssl_version}\|%{INT:ssl_bits}\|%{F5_SSL_CERT:ssl_client_cert}\|%{INT:ssl_client_serial}
+
+# HTTP Grok Pattern
+F5_HTTP_LOG ^\|%{F5_VIRTSERVER:virt}\|%{IP:clientip}\|%{F5_METHOD:httpmethod}\|\"%{URIPATHPARAM:request}\"\|HTTP/%{NUMBER:httpversion}\|%{GREEDYDATA:useragent}\|%{QS:referrer}\|%{F5_TIMESTAMP:request_timestamp}\|%{NUMBER:request_length}\|%{NUMBER:request_elapsed_time}\|%{F5_NODE:node}\|%{NUMBER:response}\|%{F5_TIMESTAMP:response_timestamp}\|%{NUMBER:response_length}\|%{F5_POOL:pool}
+
+With my following filter config:
+
+   grok {
+    type => "f5-access"
+    patterns_dir => "/usr/local/logstash/patterns"
+    pattern => "%{F5_HTTPS_LOG}"
+    pattern => "%{F5_HTTP_LOG}"
+  }
+
+ date {
+    type => "f5-access"
+    match => [ "request_timestamp", "YYYY/MM/dd HH:mm:ss" ]
+  }

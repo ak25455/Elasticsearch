@@ -1,0 +1,78 @@
+Suricata
+make sure your Suricata is compiled/installed with libjansson support enabled:
+
+$ suricata --build-info
+This is Suricata version 2.0 RELEASE
+Features: NFQ PCAP_SET_BUFF LIBPCAP_VERSION_MAJOR=1 AF_PACKET HAVE_PACKET_FANOUT LIBCAP_NG LIBNET1.1 HAVE_HTP_URI_NORMALIZE_HOOK HAVE_NSS HAVE_LIBJANSSON 
+...
+  libnss support:                          yes
+  libnspr support:                         yes
+  libjansson support:                     --> yes <--
+-------------------------------------------------------------------------------------------------------------------
+Configure suricata
+In your suricata.yaml
+
+  # "United" event log in JSON format
+  - eve-log:
+      enabled: yes
+      type: file #file|syslog|unix_dgram|unix_stream
+      filename: eve.json
+      # the following are valid when type: syslog above
+      #identity: "suricata" 
+      #facility: local5
+      #level: Info ## possible levels: Emergency, Alert, Critical,
+                   ## Error, Warning, Notice, Info, Debug
+      types:
+        - alert
+        - http:
+            extended: yes     # enable this for extended logging information
+        - dns
+        - tls:
+            extended: yes     # enable this for extended logging information
+        - files:
+            force-magic: yes   # force logging magic on all logged files
+            force-md5: yes     # force logging of md5 checksums
+        #- drop
+        - ssh
+------------------------------------------------------------------------------------------------------------		
+		Logstash configuration
+Create and save a logstash.conf file with the following content in the /etc/init/ directory :
+
+/etc/logstash/conf.d/logstash.conf
+
+Insert the following(make sure the directory path is correct):
+input {
+  file { 
+    path => ["/var/log/suricata/eve.json"]
+    codec =>   json 
+    type => "SuricataIDPS-logs" 
+  }
+
+}
+
+filter {
+  if [type] == "SuricataIDPS-logs" {
+    date {
+      match => [ "timestamp", "ISO8601" ]
+    }
+  }
+
+  if [src_ip]  {
+    geoip {
+      source => "src_ip" 
+      target => "geoip" 
+      database => "/opt/logstash/vendor/geoip/GeoLiteCity.dat" 
+      add_field => [ "[geoip][coordinates]", "%{[geoip][longitude]}" ]
+      add_field => [ "[geoip][coordinates]", "%{[geoip][latitude]}"  ]
+    }
+    mutate {
+      convert => [ "[geoip][coordinates]", "float" ]
+    }
+  }
+}
+
+output { 
+  elasticsearch {
+    host => localhost
+  }
+}

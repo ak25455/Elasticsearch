@@ -1,0 +1,73 @@
+http://www.tothenew.com/blog/tweaking-logstashs-s3-plugin-to-create-folders-in-yyyymmdd-format-on-aws-s3/
+
+
+Logstash S3 plugin does not provide the functionality to pass a variable. To achieve our objective, we decided to tweak the ruby code of S3 plugin. You can do that by following the below steps:
+Go to your Logstash’s home directory.
+
+Open vendor/bundle/jruby/1.9/gems/logstash-output-s3-1.0.2/lib/logstash/outputs/s3.rb file.
+
+Search for string “remote_filename”. We need to tweak the below line:
+
+remote_filename = "#{@prefix}#{File.basename(file)}"
+Create time object say “t” above this line and store the desired format i.e YYYY/MM/DD in a variable  say “date_s3” as below:
+t = Time.new 
+date_s3 = t.strftime("%Y/%m/%d/")
+
+Append this variable in the line specified in point 3 as below:
+
+remote_filename = “#{@prefix}#{date_s3}#{File.basename(file)}”
+
+The modified code would look like this:
+
+t = Time.new
+date_s3 = t.strftime(“%Y/%m/%d/”)
+remote_filename = “#{@prefix}#{date_s3}#{File.basename(file)}”
+
+Save the file and check configuration and restart Logstash.
+
+
+Logstash’s S3 plugin configuration in Logstash’s output would be:
+s3{
+    access_key_id => “xxxxxxxxxxxxxxxxxxxxxxxxx”
+secret_access_key => “XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX”
+endpoint_region => “ap-southeast-1?
+bucket => “s3-bucket-name”
+prefix => “directory-inside-s3/”
+time_file => 60
+canned_acl => “private”
+}
+
+
+Note: Do not forget to add “/” in the prefix parameter.
+This configuration would create date-based directory structure inside “s3://s3-bucket-name/directory-inside-s3/“.
+
+*******************************************
+REMOVE issues with Signature V4
+*******************************************
+
+edit /opt/logstash/vendor//bundle/jruby/1.9/gems/aws-sdk-v1-1.66.0/lib/aws/s3/config.rb
+
+you'll notice this:
+
+ add_option : s3_signature_version do |config, value|
+  v3_regions = %w(
+  us-east-1 <-----------------------------------------------------------REMOVE THIS
+  us-west-1
+  us-west-2
+  ap-northeast-1
+  ap-southeast-1
+  ap-southeast-2
+  sa-east-1
+  eu-west-1
+  us-gov-west-1
+)
+if value
+  value
+elsif config.s3 && config.s3[:signature_version]
+  config.s3[:signature_version]
+elsif v3_regions.include?(config.s3_region)
+  :v3
+else
+  :v4
+end
+I implemented a workaround by removing the regions I'm using from v3_regions

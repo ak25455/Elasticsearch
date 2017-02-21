@@ -1,0 +1,19 @@
+Elasticsearch - Unique count by hour
+
+{
+  "aggs": {
+    "per_day": {
+      "date_histogram": {
+        "field": "date",
+        "interval": "hour"
+      },
+      "aggs": {
+        "distinct_users": {
+          "cardinality": {
+            "field": "user"
+          }
+        }
+      }
+    }
+  }
+}

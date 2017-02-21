@@ -1,0 +1,5 @@
+.*PA\-5020, 1,%{DATA:ReceiveTime},%{DATA}
+,TRAFFIC,.*?,.,%{DATA:GenerateTime},%{IP:srcIP},%{IP:dstIP},.*?,.*?,%{DATA:RuleDescription},%{DATA:Username},%{DATA:dstUser},
+%{DATA:application},%{DATA:Vsystem},%{DATA:SrcZone},%{DATA:DstZone},%{DATA:InbountInt},%{DATA:OutboundInt},%{DATA:Logaction},
+%{DATA:TimeLogged},%{INT:sessionID},%{INT:RepeatCount},%{INT:sport},%{INT:dport},.*?,.*?,%{BASE16NUM:flags},%{DATA:protocol},%{DATA:action}
+

@@ -1,0 +1,1 @@
+curl -XDELETE http://10.128.2.56:9200/<indexname*>

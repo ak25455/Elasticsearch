@@ -1,0 +1,10 @@
+Install Node.js
+
+apt-get install curl
+curl -sL https://deb.nodesource.com/setup | bash -
+apt-get install nodejs
+
+
+Install elasticdump 
+
+npm install elasticdump -g elasticdump
