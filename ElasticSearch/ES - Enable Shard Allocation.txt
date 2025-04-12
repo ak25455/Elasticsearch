@@ -1,3 +1,0 @@
-curl -XPUT 10.64.2.57:9200/_settings -d '{"index.routing.allocation.disable_allocation": false}'
-curl -XPUT 10.64.2.59:9200/_settings -d '{"index.routing.allocation.disable_allocation": false}'
-curl -XPUT 10.64.2.60:9200/_settings -d '{"index.routing.allocation.disable_allocation": false}'
